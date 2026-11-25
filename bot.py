@@ -1,6 +1,23 @@
 import requests
 import time
 from datetime import datetime, timezone
+import os
+from threading import Thread
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot attivo")
+    def log_message(self, *a):
+        pass
+
+def keep_alive():
+    port = int(os.environ.get("PORT", 10000))
+    HTTPServer(("0.0.0.0", port), Handler).serve_forever()
+
+Thread(target=keep_alive, daemon=True).start()
 
 TELEGRAM_TOKEN = "9273636150:AAG-WbSYB80zWzEpw9iD1coUAPyi7HSAQZQ"
 CHAT_ID = "5803856763"
