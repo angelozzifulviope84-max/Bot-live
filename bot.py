@@ -51,28 +51,48 @@ while True:
                 nome = f"{match.get('home_team','')} vs {match.get('away_team','')}"
                 for book in match.get("bookmakers", []):
                     for m in book.get("markets", []):
-                        if m.get("key") == "totals":
-                            for o in m.get("outcomes", []):
-                                if o.get("name") == "Over" and o.get("point") == 0.5:
-                                    q = o.get("price", 0)
-                                    chiave = nome + "_over05"
-                                    if 0.60 <= q <= 0.85 and 20 <= minuti <= 35 and chiave not in gia:
-                                        manda(f"🔥 LIVE {int(minuti)}' - OVER 0.5 1T\n\n⚽ {nome}\n💰 @{q}")
-                                        gia.add(chiave)
-                                if o.get("name") == "Over" and o.get("point") == 1.5:
-                                    q = o.get("price", 0)
-                                    chiave = nome + "_forever"
-                                    if 1.60 <= q <= 2.10 and 60 <= minuti <= 80 and chiave not in gia:
-                                        manda(f"♾️ LIVE {int(minuti)}' - FOREVER 1 BALL\n\n⚽ {nome}\n💰 @{q}")
-                                        gia.add(chiave)
-                        if m.get("key") == "spreads":
-                            for o in m.get("outcomes", []):
-                                if o.get("point") == -0.25:
-                                    q = o.get("price", 0)
-                                    chiave = nome + "_magia_" + str(o.get("name"))
-                                    if 1.80 <= q <= 2.20 and 55 <= minuti <= 75 and chiave not in gia:
-                                        manda(f"✨ LIVE {int(minuti)}' - MAGIA -0.25\n\n⚽ {nome}\n👉 {o.get('name')}\n💰 @{q}")
-                                        gia.add(chiave)
+                                            if m.get("key") == "totals":
+                        for o in m.get("outcomes", []):
+                            # REGOLA 1 - 25' PRIMO TEMPO
+                            if o.get("name") == "Over" and o.get("point") == 0.5:
+                                q = o.get("price", 0)
+                                chiave = nome + "_over05_1T"
+                                if 1.60 <= q <= 1.80 and 20 <= minuti <= 35 and chiave not in gia:
+                                    manda(f"🔥 LIVE {int(minuti)}' - OVER 0.5 1T\n\n⚽ {nome}\n💰 @{q}")
+                                    gia.add(chiave)
+
+                            # REGOLA 2 - 25' SECONDO TEMPO
+                            if o.get("name") == "Over" and o.get("point") == 0.5:
+                                q = o.get("price", 0)
+                                chiave = nome + "_over05_2T"
+                                if 1.60 <= q <= 1.80 and 65 <= minuti <= 80 and chiave not in gia:
+                                    manda(f"🔥 LIVE {int(minuti)}' - OVER 0.5 2T\n\n⚽ {nome}\n💰 @{q}")
+                                    gia.add(chiave)
+
+                            # REGOLA 3 - PALLA HT 0-0
+                            if o.get("name") == "Over" and o.get("point") == 1.0:
+                                q = o.get("price", 0)
+                                chiave = nome + "_cherry_HT"
+                                if 1.60 <= q <= 2.20 and 45 <= minuti <= 55 and chiave not in gia:
+                                    manda(f"🍒 LIVE {int(minuti)}' - PALLA HT 0-0 OVER 1.0 2T\n\n⚽ {nome}\n💰 @{q}")
+                                    gia.add(chiave)
+
+                            # REGOLA 4 - 1-0 / 0-1 ALTRO GOL
+                            if o.get("name") == "Over" and o.get("point") == 2.0:
+                                q = o.get("price", 0)
+                                chiave = nome + "_altro_gol_2palle"
+                                if 1.60 <= q <= 2.10 and 60 <= minuti <= 80 and chiave not in gia:
+                                    manda(f"🔥 LIVE {int(minuti)}' - 1-0 / 0-1 ALTRO GOL 2 palle\n\n⚽ {nome}\n💰 @{q}")
+                                    gia.add(chiave)
+
+                            # REGOLA 4B - 1-0 / 0-1 con 2.5
+                            if o.get("name") == "Over" and o.get("point") == 2.5:
+                                q = o.get("price", 0)
+                                chiave = nome + "_altro_gol_2palle5"
+                                if 1.60 <= q <= 2.10 and 60 <= minuti <= 80 and chiave not in gia:
+                                    manda(f"🔥 LIVE {int(minuti)}' - 1-0 / 0-1 ALTRO GOL 2.5 palle\n\n⚽ {nome}\n💰 @{q}")
+                                    gia.add(chiave)
+                                    
         time.sleep(300)
     except Exception as e:
         print("Errore:", e)
