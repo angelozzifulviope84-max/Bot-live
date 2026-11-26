@@ -51,7 +51,7 @@ while True:
                 nome = f"{match.get('home_team','')} vs {match.get('away_team','')}"
                 for book in match.get("bookmakers", []):
                     for m in book.get("markets", []):
-                                            if m.get("key") == "totals":
+                       if m.get("key") == "totals":
                         for o in m.get("outcomes", []):
                             # REGOLA 1 - 25' PRIMO TEMPO
                             if o.get("name") == "Over" and o.get("point") == 0.5:
