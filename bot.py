@@ -16,7 +16,6 @@ def keep_alive():
     HTTPServer(("0.0.0.0", port), Handler).serve_forever()
 Thread(target=keep_alive, daemon=True).start()
 FOOTBALL_KEY = os.getenv("API_FOOTBALL_KEY")
-ODDS_KEY = os.getenv("ODDS_API_KEY")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 MAPPA = {135: "soccer_italy_serie_a", 136: "soccer_italy_serie_b", 39: "soccer_epl", 140: "soccer_spain_la_liga", 78: "soccer_germany_bundesliga", 61: "soccer_france_ligue_1", 2: "soccer_uefa_champs_league", 3: "soccer_uefa_europa_league", 71: "soccer_brazil_campeonato", 88: "soccer_netherlands_eredivisie", 94: "soccer_portugal_primeira_liga", 848: "soccer_uefa_europa_conference_league"}
@@ -24,25 +23,37 @@ GIA_MANDATI = set()
 def send_telegram(msg):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "HTML"}, timeout=10)
-def get_over15(sport, home, away):
-    try:
-        url = f"https://api.the-odds-api.com/v4/sports/{sport}/odds/"
-        params = {"apiKey": ODDS_KEY, "regions": "eu", "markets": "totals", "oddsFormat": "decimal"}
-        r = requests.get(url, params=params, timeout=15)
-        if r.status_code != 200:
-            return 0
-        for match in r.json():
-            if home in match['home_team'] or away in match['away_team']:
-                for book in match.get("bookmakers", []):
-                    for market in book.get("markets", []):
-                        if market["key"] == "totals":
-                            for out in market.get("outcomes", []):
-                                if out["name"] == "Over" and out["point"] == 1.5:
-                                    return out["price"]
-        return 0
-    except:
-        return 0
-print("BOT PARTITO - PALETTI LIBRO ATTIVI", flush=True)
+def metodo_1ball_lag_15(nome, minuto, fid):
+    if (fid, "1BALL_15") in GIA_MANDATI:
+        return
+    GIA_MANDATI.add((fid, "1BALL_15"))
+    send_telegram(f"1 BALL LAG - 15' 1T\n<b>{nome}</b>\n0-0 al {minuto}'\nSe ancora a 1 palla, partita molto offensiva. Controlla 1 palla, poi 0.75 e 0.50")
+def metodo_25th_minute_mark(nome, minuto, fid):
+    if (fid, "25MARK") in GIA_MANDATI:
+        return
+    GIA_MANDATI.add((fid, "25MARK"))
+    send_telegram(f"25TH MINUTE MARK\n<b>{nome}</b>\n0-0 al {minuto}'\nO/U 0.75 paga 0.60-0.75 = offensiva. Se a 25' resta 0.75 a 0.70 / -1.00 = gol in arrivo. Se 0.50 paga 0.60-0.80 = possibile. Se 0.50 paga 0.90+ = NO BET")
+def metodo_cherry_pick_ht(nome, fid):
+    if (fid, "PALLA_HT") in GIA_MANDATI:
+        return
+    GIA_MANDATI.add((fid, "PALLA_HT"))
+    send_telegram(f"CHERRY PICK - PALLA HT 0-0\n<b>{nome}</b>\nFine 1T 0-0\nO/U 1 palla per 2T? Pareggio 1X2 sopra 2.00? Diff. 1X2 sopra 2.5? H2H da Over 2.5?")
+def metodo_1ball_lag_60(nome, minuto, fid):
+    if (fid, "1BALL_60") in GIA_MANDATI:
+        return
+    GIA_MANDATI.add((fid, "1BALL_60"))
+    send_telegram(f"1 BALL LAG - 15' 2T 60'\n<b>{nome}</b>\n0-0 al {minuto}'\nSe ancora a 2 palle a 0.74, stessa cosa del 1T. Controlla HDP -0.25")
+def metodo_sul_1a0_2palle(nome, minuto, gol_c, gol_o, fid):
+    if (fid, "2PALLE_10") in GIA_MANDATI:
+        return
+    GIA_MANDATI.add((fid, "2PALLE_10"))
+    send_telegram(f"SUL 1-0: 2 PALLE\n<b>{nome}</b>\n{gol_c}-{gol_o} al {minuto}'\nControlla O/U 2 palle")
+def metodo_hdp_025(nome, minuto, fid):
+    if (fid, "HDP025") in GIA_MANDATI:
+        return
+    GIA_MANDATI.add((fid, "HDP025"))
+    send_telegram(f"0.25 HDP MAGIC\n<b>{nome}</b>\n0-0 al {minuto}'\nFavorita -0.25 a 0.50-0.60 = sta dominando")
+print("BOT PARTITO - SOLO LIBRO", flush=True)
 while True:
     try:
         ora = datetime.now()
@@ -61,24 +72,17 @@ while True:
             gol_o = m["goals"]["away"]
             nome = f"{casa} vs {osp}"
             fid = m["fixture"]["id"]
-            over15 = get_over15(MAPPA[lid], casa, osp)
-            if 14 <= minuto <= 16 and gol_c == 0 and gol_o == 0 and (fid, "1BALL_15") not in GIA_MANDATI:
-                if over15 >= 1.40:
-                    GIA_MANDATI.add((fid, "1BALL_15"))
-                    send_telegram(f"1 BALL LAG 15' 1T\n<b>{nome}</b>\n0-0 al {minuto}' - Over 1.5 @ {over15}\nCHECK: 1 palla ancora li? Se si, controlla 0.75 e HDP -0.25 a 0.50-0.60")
-            if 20 <= minuto <= 25 and gol_c == 0 and gol_o == 0 and (fid, "25MARK") not in GIA_MANDATI:
-                if over15 >= 1.40:
-                    GIA_MANDATI.add((fid, "25MARK"))
-                    send_telegram(f"25TH MINUTE MARK\n<b>{nome}</b>\n0-0 al {minuto}' - Over 1.5 @ {over15}\nCHECK: O/U 0.75 paga 0.60-0.75? Se a 25' resta 0.75 a 0.70 / -1.00 = GOL IN ARRIVO. Se 0.50 paga 0.60-0.80 = ancora possibile. Se 0.50 paga 0.90+ = NO BET. + HDP -0.25 a 0.50-0.60?")
-            if minuto == 45 and gol_c == 0 and gol_o == 0 and (fid, "PALLA_HT") not in GIA_MANDATI:
-                GIA_MANDATI.add((fid, "PALLA_HT"))
-                send_telegram(f"CHERRY PICK - PALLA HT 0-0\n<b>{nome}</b>\nFine 1T 0-0\nCHECK 2T: O/U 1 palla per 2T? Pareggio 1X2 sopra 2.00? Diff. 1X2 sopra 2.5? H2H da Over 2.5?")
-            if 59 <= minuto <= 61 and gol_c == 0 and gol_o == 0 and (fid, "1BALL_60") not in GIA_MANDATI:
-                GIA_MANDATI.add((fid, "1BALL_60"))
-                send_telegram(f"1 BALL LAG 15' 2T - 60'\n<b>{nome}</b>\n0-0 al {minuto}'\nCHECK: 2 palle ancora li a 0.74? HDP -0.25? Stesso principio del 1T")
-            if 59 <= minuto <= 61 and ((gol_c == 1 and gol_o == 0) or (gol_c == 0 and gol_o == 1)) and (fid, "2PALLE_10") not in GIA_MANDATI:
-                GIA_MANDATI.add((fid, "2PALLE_10"))
-                send_telegram(f"SUL 1-0: 2 PALLE\n<b>{nome}</b>\n{gol_c}-{gol_o} al {minuto}'\nCHECK: O/U 2 palle per il resto? HDP?")
+            if 14 <= minuto <= 16 and gol_c == 0 and gol_o == 0:
+                metodo_1ball_lag_15(nome, minuto, fid)
+                metodo_hdp_025(nome, minuto, fid)
+            if 20 <= minuto <= 25 and gol_c == 0 and gol_o == 0:
+                metodo_25th_minute_mark(nome, minuto, fid)
+            if minuto == 45 and gol_c == 0 and gol_o == 0:
+                metodo_cherry_pick_ht(nome, fid)
+            if 59 <= minuto <= 61 and gol_c == 0 and gol_o == 0:
+                metodo_1ball_lag_60(nome, minuto, fid)
+            if 59 <= minuto <= 61 and ((gol_c == 1 and gol_o == 0) or (gol_c == 0 and gol_o == 1)):
+                metodo_sul_1a0_2palle(nome, minuto, gol_c, gol_o, fid)
     except Exception as e:
         print(f"Errore: {e}", flush=True)
     time.sleep(300)
