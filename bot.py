@@ -18,7 +18,7 @@ Thread(target=keep_alive, daemon=True).start()
 FOOTBALL_KEY = os.getenv("API_FOOTBALL_KEY")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-MAPPA = {135: "soccer_italy_serie_a", 136: "soccer_italy_serie_b", 39: "soccer_epl", 140: "soccer_spain_la_liga", 78: "soccer_germany_bundesliga", 61: "soccer_france_ligue_1", 2: "soccer_uefa_champs_league", 3: "soccer_uefa_europa_league", 71: "soccer_brazil_campeonato", 88: "soccer_netherlands_eredivisie", 94: "soccer_portugal_primeira_liga", 848: "soccer_uefa_europa_conference_league"}
+MAPPA = {135: "soccer_italy_serie_a", 136: "soccer_italy_serie_b", 39: "soccer_epl", 140: "soccer_spain_la_liga", 78: "soccer_germany_bundesliga", 61: "soccer_france_ligue_1", 2: "soccer_uefa_champs_league", 3: "soccer_uefa_europa_league", 71: "soccer_brazil_campeonato", 88: "soccer_netherlands_eredivisie", 94: "soccer_portugal_primeira_liga", 307: "soccer_saudi_pro_league", 848: "soccer_uefa_europa_conference_league"}
 GIA_MANDATI = set()
 def send_telegram(msg):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
