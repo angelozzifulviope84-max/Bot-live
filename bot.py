@@ -54,35 +54,31 @@ def metodo_hdp_025(nome, minuto, fid):
     GIA_MANDATI.add((fid, "HDP025"))
     send_telegram(f"0.25 HDP MAGIC\n<b>{nome}</b>\n0-0 al {minuto}'\nFavorita -0.25 a 0.50-0.60 = sta dominando")
 print("BOT PARTITO - SOLO LIBRO", flush=True)
-while True:
-    try:
-        ora = datetime.now()
-        print(f"Check ore {ora}", flush=True)
-        r = requests.get("https://v3.football.api-sports.io/fixtures?live=all", headers={"x-apisports-key": FOOTBALL_KEY}, timeout=15)
-        for m in r.json().get("response", []):
-            lid = m["league"]["id"]
-            if lid not in MAPPA:
-                continue
-            minuto = m["fixture"]["status"]["elapsed"]
-            if minuto is None:
-                continue
-            casa = m["teams"]["home"]["name"]
-            osp = m["teams"]["away"]["name"]
-            gol_c = m["goals"]["home"]
-            gol_o = m["goals"]["away"]
-            nome = f"{casa} vs {osp}"
-            fid = m["fixture"]["id"]
-            if 14 <= minuto <= 16 and gol_c == 0 and gol_o == 0:
-                metodo_1ball_lag_15(nome, minuto, fid)
-                metodo_hdp_025(nome, minuto, fid)
-            if 20 <= minuto <= 25 and gol_c == 0 and gol_o == 0:
-                metodo_25th_minute_mark(nome, minuto, fid)
-            if minuto == 45 and gol_c == 0 and gol_o == 0:
-                metodo_cherry_pick_ht(nome, fid)
-            if 59 <= minuto <= 61 and gol_c == 0 and gol_o == 0:
-                metodo_1ball_lag_60(nome, minuto, fid)
-            if 59 <= minuto <= 61 and ((gol_c == 1 and gol_o == 0) or (gol_c == 0 and gol_o == 1)):
-                metodo_sul_1a0_2palle(nome, minuto, gol_c, gol_o, fid)
-    except Exception as e:
-        print(f"Errore: {e}", flush=True)
-    time.sleep(300)
+    ora = datetime.now()
+    print(f"Check ore {ora}", flush=True)
+    r = requests.get("https://v3.football.api-sports.io/fixtures?live=all", headers={"x-apisports-key": FOOTBALL_API_KEY})
+    lista = r.json().get("response", [])
+    print(f"Totale live API: {len(lista)}", flush=True)
+    filtrate = 0
+    for m in lista:
+        lid = m["league"]["id"]
+        if lid not in MAPPA:
+            continue
+        filtrate += 1
+        minuto = m["fixture"]["status"]["elapsed"]
+        if minuto is None:
+            continue
+        casa = m["teams"]["home"]["name"]
+        osp = m["teams"]["away"]["name"]
+        gol_c = m["goals"]["home"]
+        gol_o = m["goals"]["away"]
+        print(f"{casa}-{osp} {gol_c}-{gol_o} min {minuto} lega {lid}", flush=True)
+        if 13 <= minuto <= 17 and gol_c == 0 and gol_o == 0:
+            invia_metodo_1(...)
+        if 20 <= minuto <= 26 and gol_c == 0 and gol_o == 0:
+            invia_25th(...)
+        if 44 <= minuto <= 46 and gol_c == 0 and gol_o == 0:
+            invia_cherry(...)
+        if 58 <= minuto <= 63:
+            invia_1ball60(...)
+    print(f"Filtrate MAPPA: {filtrate} - Controllo finito", flush=True)
